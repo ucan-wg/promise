@@ -31,17 +31,46 @@ This specification describes a mechanism for extending UCAN [Invocation]s with d
 
 # 2 Format
 
-| Tag           | Type    | Description |
-|---------------|---------|-------------|
-| `await/*`     | `&Task` |             |
-| `await/ok`    | `&Task` |             |
-| `await/error` | `&Task` |             |
+A Promise is encoded as a map with a single field (the tag) which selects for the branch, and the CID of the relevant [Task]. Becasue Tasks uniquely identify their output and MAY be replicated across multiple trustless providers, referencing the entire [Invocation] would overspecify the [Result].
+
+It has several variants:
+
+| Tag           | Type    | Description                                                           |
+|---------------|---------|-----------------------------------------------------------------------|
+| `await/*`     | `&Task` | Await any branch                                                      |
+| `await/ok`    | `&Task` | Await an `ok` branch of a [Result], and inline the unwrapped value    |
+| `await/error` | `&Task` | Await an `error` branch of a [Result], and inline the unwrapped value |
+
+## Examples
+
+``` js
+// In isolation
+{"await/*": {"/": "bafkr4ig4o5mwufavfewt4jurycn7g7dby2tcwg5q2ii2y6idnwguoyeruq"}}
+
+// In situ
+{
+  "act": {
+    "nnc": "246910121416"
+    "cmd": "msg/send",
+    "arg": {
+      "from": "alice@example.com",
+      "to": [
+        "bob@example.com",
+        {"await/ok": {"/": 'bafkr4ie7m464donhksutmfqsyqzgcrqhzi2vc5ygiw3ajkhuz6lulnbjam'}},
+        "daniel@example.com"
+      ]
+    }
+  }
+}
+```
 
 # 3 Resolution
 
-# 4 Prior Art
+When a 
 
-[ucanto RPC] from [DAG House] is a production system that uses UCAN as the basis for an RPC layer.
+Branch mismatch
+
+# 4 Prior Art
 
 The [Capability Transport Protocol (CapTP)] is one of the most influential object-capability systems, and forms the basis for much of the rest of the items on this list.
 
@@ -57,21 +86,11 @@ Many thanks to [Mark Miller] for his [trail blazing work][erights] on [capabilit
 
 Many thanks to [Luke Marsen] and [Simon Worthington] for their feedback on invocation model from their work on [Bacalhau] and [IPVM].
 
-Thanks to [Marc-Antoine Parent] for his discussions of the distinction between declarations and directives both in and out of a UCAN context.
-
-Many thanks to [Quinn Wilton] for her discussion of speech acts, the dangers of signing canonicalized data, and ergonomics.
-
-Thanks to [Blaine Cook] for sharing their experiences with OAuth 1, irreversible design decisions, and advocating for keeping the spec simple-but-evolvable.
-
 Thanks to [Philipp Krüger] for the enthusiastic feedback on the overall design and encoding.
 
 Thanks to [Christine Lemmer-Webber] for the many conversations about capability systems and the programming models that they enable.
 
-Thanks to [Rod Vagg] for the clarifications on IPLD Schema implicits and the general IPLD worldview
-
 <!-- Footnotes -->
-
-[^js-num]: JavaScript has a single numeric type ([`Number`][JS Number]) for both integers and floats. This representation is defined as a [IEEE-754] double-precision floating point number, which has a 53-bit significand.
  
 <!-- Internal Links -->
 
