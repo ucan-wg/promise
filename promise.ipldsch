@@ -1,29 +1,5 @@
-type Invocation struct {
-  inv &InvocationPayload
-  sig Signature
-}
-
-type InvocationPayload struct {
-  uiv SemVer
-
-  iss DID
-  aud DID
-
-  run &Task
-  cse optional &Receipt
-}
-
-type Task struct {
-  act &Command
-  mta {String : Any}
-  prf [&Delegation]
-  exp optional Integer
-}
-
-type Action {
-  cmd Command
-  arg {String : Any}
-  nnc String
-
-  sub optional DID
-}
+type Promise union {
+  | &Task "await/*"
+  | &Task "await/ok"
+  | &Task "await/error"
+} representation keyed

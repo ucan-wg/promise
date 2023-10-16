@@ -15,7 +15,7 @@
 
 - [DAG-CBOR]
 - [DID]
-- [UCAN Delegation]
+- [UCAN Invocation]
 
 ## Language
 
@@ -23,8 +23,23 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 # 0 Abstract
 
+This specification describes a mechanism for extending UCAN [Invocation]s with distributed [promise pipeline]s.
 
-# 5 Prior Art
+# 1 Introduction
+
+## 1.1 Motivation
+
+# 2 Format
+
+| Tag           | Type    | Description |
+|---------------|---------|-------------|
+| `await/*`     | `&Task` |             |
+| `await/ok`    | `&Task` |             |
+| `await/error` | `&Task` |             |
+
+# 3 Resolution
+
+# 4 Prior Art
 
 [ucanto RPC] from [DAG House] is a production system that uses UCAN as the basis for an RPC layer.
 
@@ -36,7 +51,7 @@ The Object Capability Network ([OCapN]) protocol extends [CapTP] with a generali
 
 [Cap 'n Proto RPC] is an influential RPC framework based on concepts from [CapTP].
 
-# 6 Acknowledgements
+# 5 Acknowledgements
 
 Many thanks to [Mark Miller] for his [trail blazing work][erights] on [capability systems].
 
