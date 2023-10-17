@@ -303,16 +303,17 @@ Thanks to [Christine Lemmer-Webber] for the many conversations about capability 
 [Mark Miller]: https://github.com/erights
 [OCapN]: https://github.com/ocapn/
 [Philipp Krüger]: https://github.com/matheus23/
-[Result]: https://github.com/ucan-wg/invocation/#421-result
 [Receipt]: https://github.com/ucan-wg/invocation/#41-receipt-envelope
+[Result]: https://github.com/ucan-wg/invocation/#421-result
 [Robust Composition]: http://www.erights.org/talks/thesis/markm-thesis.pdf
 [Spritely Institute]: https://spritely.institute/
+[Task]: https://github.com/ucan-wg/invocation#32-task
 [UCAN Invocation]: https://github.com/ucan-wg/invocation
 [Zeeshan Lakhani]: https://github.com/zeeshanlakhani
 [blackboard]: https://en.wikipedia.org/wiki/Blackboard_(design_pattern)
+[capability systems]: https://en.wikipedia.org/wiki/Capability-based_security
 [distributed promise pipelines]: http://erights.org/elib/distrib/pipeline.html
 [eRights]: https://erights.org
 [gossip]: https://en.wikipedia.org/wiki/Gossip_protocol
 [memoization]: https://en.wikipedia.org/wiki/Memoization
 [pubsub]: https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern
-[capability systems]: https://en.wikipedia.org/wiki/Capability-based_security
