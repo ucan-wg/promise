@@ -94,7 +94,7 @@ sequenceDiagram
 
 # 2. Promise Format
 
-A Promise is encoded as a map with a single field (the tag) which selects for the branch, and the CID of the relevant [Task]. Because Tasks uniquely identify their output and MAY be replicated across multiple trustless providers, referencing the entire [Invocation] would over-specify the [Result].
+A Promise is encoded as a map with a single field (the tag) which selects for the branch, and the CID of the relevant [Task]. Because Tasks uniquely identify their output and MAY be replicated across multiple trustless providers, referencing the entire [UCAN Invocation] would over-specify the [Result].
 
 It has several variants:
 
@@ -284,6 +284,8 @@ Thanks to [Christine Lemmer-Webber] for the many conversations about capability 
  
 <!-- Internal Links -->
 
+[ActID]: #111-actid
+
 <!-- External Links -->
 
 [Action]: https://github.com/ucan-wg/invocation#31-action
@@ -301,6 +303,8 @@ Thanks to [Christine Lemmer-Webber] for the many conversations about capability 
 [Mark Miller]: https://github.com/erights
 [OCapN]: https://github.com/ocapn/
 [Philipp Krüger]: https://github.com/matheus23/
+[Result]: https://github.com/ucan-wg/invocation/#421-result
+[Receipt]: https://github.com/ucan-wg/invocation/#41-receipt-envelope
 [Robust Composition]: http://www.erights.org/talks/thesis/markm-thesis.pdf
 [Spritely Institute]: https://spritely.institute/
 [UCAN Invocation]: https://github.com/ucan-wg/invocation
@@ -309,4 +313,5 @@ Thanks to [Christine Lemmer-Webber] for the many conversations about capability 
 [distributed promise pipelines]: http://erights.org/elib/distrib/pipeline.html
 [eRights]: https://erights.org
 [gossip]: https://en.wikipedia.org/wiki/Gossip_protocol
+[memoization]: https://en.wikipedia.org/wiki/Memoization
 [pubsub]: https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern
