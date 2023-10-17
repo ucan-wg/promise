@@ -26,7 +26,7 @@ This specification describes a mechanism for extending UCAN [Invocation]s with d
 
 # 1. Introduction
 
-> Machines grow faster and memories grow larger. But the speed of light is constant and New York is not getting any closer to Tokyo. As hardware continues to improve, the latency barrier between distant machines will increasingly dominate the performance of distributed computation. When distributed computational steps require unnessesary round trips, compositions of these steps can cause unnessesary cascading sequences of round trips.
+> Machines grow faster and memories grow larger. But the speed of light is constant and New York is not getting any closer to Tokyo. As hardware continues to improve, the latency barrier between distant machines will increasingly dominate the performance of distributed computation. When distributed computational steps require unnecessary round trips, compositions of these steps can cause unnecessary cascading sequences of round trips.
 >
 > —[Mark Miller], [Robust Composition]
 
@@ -47,7 +47,7 @@ An Action Identifier (ActID) is the content address of an [Action]. It can be fo
 const actId = invocation.inv.run.act.asCid()
 ```
 
-A Recept MAY have multiple input addresses. For instance, if an Action contains a promise versus when it's fully reified, the associated Receipt is the same.
+A Receipt MAY have multiple input addresses. For instance, if an Action contains a promise versus when it's fully reified, the associated Receipt is the same.
 
 If an Action is run multiple times, an ActID MAY refer to many Receipts. Actions SHOULD be fully qualified, and include a unique nonce if the Action is non-idempotent. This ensures that any (correctly run) Receipts for the same ActID will have the same output value.
 
