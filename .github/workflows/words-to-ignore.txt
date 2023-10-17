@@ -1,7 +1,9 @@
 Acknowledgements
+ActID
 Agoric
 Akiko
 Akiko's
+Async
 BCP
 Bacalhau
 CBOR
@@ -58,6 +60,7 @@ atomicity
 auth
 backend
 base64url
+bbd
 canonicalized
 cryptographic
 cryptographically
@@ -75,6 +78,7 @@ invoker
 js-num
 memoization
 multiformat
+namespace
 outmost
 parallelize
 parameterizing
