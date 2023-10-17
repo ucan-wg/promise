@@ -78,7 +78,7 @@ sequenceDiagram
         Dan      ->>  Alice 💾: Read from Alice's DB!
         Alice 💾 -->> Dan:      Result<➐>
         Dan      ->>  Carol 📧: Send email containing Result<➐> as Carol!
-        Carol 📧 ->>  Carol 📧: Send email!
+        Carol 📧 ->>  Carol 📧: Send email containing Result<➐> as Carol!
 
     Note over Alice 💾, Dan: Async Promise Pipeline Flow
         Dan      ->>  Alice 💾: Read from Alice's DB!
