@@ -13,7 +13,7 @@
 
 ## Depends On
 
-- [DAG-CBOR]
+- [IPLD]
 - [DID]
 - [UCAN Invocation]
 
@@ -21,56 +21,97 @@
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [BCP 14] when, and only when, they appear in all capitals, as shown here.
 
-# 0 Abstract
+# 0. Abstract
 
 This specification describes a mechanism for extending UCAN [Invocation]s with distributed [promise pipeline]s.
 
-# 1 Introduction
+# 1. Introduction
+
+A promise is a deferred value that waits on the completion of some function. In effect it says "when that function completes, take the output and substitute it here". Distributed promises do the same, but unlike the familiar `async/await` of languages like JavaScript, MAY reference any already running computation, even from other programs. This of course requires a global namespace. Luckily, [UCAN Invocation] already has globally-unique identifiers for every [Action].
 
 ## 1.1 Motivation
 
-# 2 Format
+> Machines grow faster and memories grow larger. But the speed of light is constant and New York is not getting any closer to Tokyo. As hardware continues to improve, the latency barrier between distant machines will increasingly dominate the performance of distributed computation. When distributed computational steps require unnessesary round trips, compositions of these steps can cause unnessecary cascading sequences of round trips.
+>
+> Mark Miller, Robust Composition
+
+## 1.2 Input Addressing
+
+Indexing the output of a function by its inputs is called "input addressing". By comparison, "content addressing" acts on static data[^input-content-addressing].
+
+### 1.2.1 ActID
+
+An Action Identifier ("ActID") is the content address of an [Action]. It can be found direction in an Invocation:
+
+``` json
+// Pseudocode
+const actId = invocation.inv.run.act.asCid()
+```
+
+A Recept MAY have multiple input addresses. For instance, if an Action contains a promise versus when it's fully reified, the associated Receipt is the same.
+
+If an Action is run multiple times, an ActID MAY refer to many Receipts. Actions SHOULD be fully qualified, and include a unique nonce if the Action is non-idempotent. This ensures that any (correctly run) Receipts for the same ActID will have the same output value.
+
+### 1.2.2 Memoization Table
+
+Input addressing plays nicely as a global [memoization] table. Since it maps a hash of the inputs to the outputs, someone with access to the cache can pull out values by their input address, and skip re-running potentially expensive computations.
+
+# 2. Promise Format
 
 A Promise is encoded as a map with a single field (the tag) which selects for the branch, and the CID of the relevant [Task]. Becasue Tasks uniquely identify their output and MAY be replicated across multiple trustless providers, referencing the entire [Invocation] would overspecify the [Result].
 
 It has several variants:
 
-| Tag           | Type    | Description                                                           |
-|---------------|---------|-----------------------------------------------------------------------|
-| `await/*`     | `&Task` | Await any branch                                                      |
-| `await/ok`    | `&Task` | Await an `ok` branch of a [Result], and inline the unwrapped value    |
-| `await/error` | `&Task` | Await an `error` branch of a [Result], and inline the unwrapped value |
+| Tag           | Type      | Description                                                           |
+|---------------|-----------|-----------------------------------------------------------------------|
+| `await/*`     | `&Action` | Await any branch                                                      |
+| `await/ok`    | `&Action` | Await an `ok` branch of a [Result], and inline the unwrapped value    |
+| `await/error` | `&Action` | Await an `error` branch of a [Result], and inline the unwrapped value |
 
-## Examples
+Here are a few examples:
 
 ``` js
 // In isolation
-{"await/*": {"/": "bafkr4ig4o5mwufavfewt4jurycn7g7dby2tcwg5q2ii2y6idnwguoyeruq"}}
+{"await/*":     {"/": "bafkr4ig4o5mwufavfewt4jurycn7g7dby2tcwg5q2ii2y6idnwguoyeruq"}}
+{"await/ok":    {"/": "bafkr4ig4o5mwufavfewt4jurycn7g7dby2tcwg5q2ii2y6idnwguoyeruq"}}
+{"await/error": {"/": "bafkr4ig4o5mwufavfewt4jurycn7g7dby2tcwg5q2ii2y6idnwguoyeruq"}}
 
 // In situ
 {
-  "act": {
-    "nnc": "246910121416"
-    "cmd": "msg/send",
-    "arg": {
-      "from": "alice@example.com",
-      "to": [
-        "bob@example.com",
-        {"await/ok": {"/": 'bafkr4ie7m464donhksutmfqsyqzgcrqhzi2vc5ygiw3ajkhuz6lulnbjam'}},
-        "daniel@example.com"
-      ]
-    }
+  "sig": {"/": {bytes: "7aEDQIscUKVuAIB2Yj6jdX5ru9OcnQLxLutvHPjeMD3pbtHIoErFpo7OoC79Oe2ShgQMLbo2e6dvHh9scqHKEOmieA0"}},
+  "inv": {
+    "iss": "did:web:example.com",
+    "aud": "did:plc:ewvi7nxzyoun6zhxrhs64oiz",
+    "run": cid({
+      "act": cid({
+        "nnc": "246910121416"
+          "cmd": "msg/send",
+          "arg": {
+            "from": "alice@example.com",
+            "to": [
+              "bob@example.com",
+              "carol@example.com",
+              {"await/ok": {"/": "bafkr4ie7m464donhksutmfqsyqzgcrqhzi2vc5ygiw3ajkhuz6lulnbjam"}}
+          //   └───┬────┘        └────────────────────────────┬──────────────────────────────┘
+          // Branch Selector                                ActID
+            ]
+          }
+        }
+      }),
+      "mta": {},
+      "prf": [{"/": "bafkr4iblvgvkmqt46imsmwqkjs7p6wmpswak2p5hlpagl2htiox272xyy4"}]
+    })
   }
 }
 ```
 
-# 3 Resolution
+# 3. Resolution
 
-When a 
+When a Reciept that contains the relevant `Action` CID
 
 Branch mismatch
 
-# 4 Prior Art
+# 4. Prior Art
 
 The [Capability Transport Protocol (CapTP)] is one of the most influential object-capability systems, and forms the basis for much of the rest of the items on this list.
 
@@ -78,9 +119,9 @@ The Object Capability Network ([OCapN]) protocol extends [CapTP] with a generali
 
 [Electronic Rights Transfer Protocol (ERTP)] builds on top of [CapTP] concepts for blockchain & digital asset use cases.
 
-[Cap 'n Proto RPC] is an influential RPC framework based on concepts from [CapTP].
+[Cap "n Proto RPC] is an influential RPC framework based on concepts from [CapTP].
 
-# 5 Acknowledgements
+# 5. Acknowledgements
 
 Many thanks to [Mark Miller] for his [trail blazing work][erights] on [capability systems].
 
@@ -91,68 +132,211 @@ Thanks to [Philipp Krüger] for the enthusiastic feedback on the overall design 
 Thanks to [Christine Lemmer-Webber] for the many conversations about capability systems and the programming models that they enable.
 
 <!-- Footnotes -->
+
+[^input-content-addressing]: Content addressing can be seen as a special case of input addressing for the identity function.
  
 <!-- Internal Links -->
 
-[Arguments]: #312-arguments
-[Command]: #311-command
-[Execution Proxy]: #41112-proxy-execution
-[Executor]: #212-executor
-[Invocation Payload]: #331-invocation-payload
-[Invocation Signature]: #331-invocation-envelope
-[Invocation]: #33-invocation
-[Invoker]: #211-invoker
-[Nonce]: #314-nonce
-[Receipt Payload]: #411-receipt-payload
-[Receipt]: #42-receipt
-[Response]: #4-response
-[Result]: #41-result
-[Subject]: #313-subject
-[Task]: #32-task
-[enqueue]: #4111-enqueue
-[lazy-vs-eager]: #112-lazy-vs-eager-evaluation
-
 <!-- External Links -->
 
-[Ability]: https://github.com/ucan-wg/delegation#33-abilities
-[Agoric]: https://agoric.com/
-[BCP 14]: https://www.rfc-editor.org/info/bcp14
-[Bacalhau]: https://www.bacalhau.org/
-[Blaine Cook]: https://github.com/blaine
-[Brooklyn Zelenka]: https://github.com/expede/
-[CapTP]: https://capnproto.org/rpc.html#specification
-[Christine Lemmer-Webber]: https://github.com/cwebber
-[DAG House]: https://dag.house
-[DAG-CBOR]: https://ipld.io/specs/codecs/dag-cbor/spec/
-[DID]: https://www.w3.org/TR/did-core/
-[Delegation]: https://github.com/ucan-wg/delegation
-[E-lang Mailing List, 2000 Oct 18]: http://wiki.erights.org/wiki/Capability-based_Active_Invocation_Certificates
-[Electronic Rights Transfer Protocol (ERTP)]: https://docs.agoric.com/guides/ertp/
-[Fission]: https://fission.codes/
-[Haskell]: https://en.wikipedia.org/wiki/Haskell
-[IPVM]: https://github.com/ipvm-wg
-[Irakli Gozalishvili]: https://github.com/Gozala
-[JS Number]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number
-[Luke Marsen]: https://github.com/lukemarsden
-[Marc-Antoine Parent]: https://github.com/maparent
-[Mark Miller]: https://github.com/erights
-[OCapN]: https://github.com/ocapn/
-[Philipp Krüger]: https://github.com/matheus23/
-[Quinn Wilton]: https://github.com/QuinnWilton
-[Robust Composition]: http://www.erights.org/talks/thesis/markm-thesis.pdf
-[Rod Vagg]: https://github.com/rvagg/
-[Simon Worthington]: https://github.com/simonwo
-[Spritely Institute]: https://spritely.institute/news/introducing-a-distributed-debugger-for-goblins-with-time-travel.html
-[UCAN Ability]: https://github.com/ucan-wg/delegation/#23-ability
-[UCAN Delegation]: https://github.com/ucan-wg/delegation/
-[UCAN Promise]: https://github.com/ucan-wg/promise/
-[URI]: https://en.wikipedia.org/wiki/Uniform_Resource_Identifier
-[Zeeshan Lakhani]: https://github.com/zeeshanlakhani
-[`data`]: https://en.wikipedia.org/wiki/Data_URI_scheme
-[`ipfs`]: https://docs.ipfs.tech/how-to/address-ipfs-on-web/#native-urls
-[`magnet`]: https://en.wikipedia.org/wiki/Magnet_URI_scheme
-[capability systems]: https://en.wikipedia.org/wiki/Capability-based_security
-[distributed promise pipelines]: http://erights.org/elib/distrib/pipeline.html
-[eRights]: https:/erights.org
-[erights]: https://erights.org
-[ucanto RPC]: https://github.com/web3-storage/ucanto
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```json
+{
+  iss: "did:example:bob",
+  aud: "did:example:alice",
+  act: "msg/send",
+  nnc: "",
+  arg: {
+    from: "mailto:alice@example.com",
+    to: [
+      "bob@example.com",
+      "carol@example.com"
+    ],
+    subject: "hello",
+    body: "world"
+  }
+  meta: {
+    fuel: 100,
+    disk: "100GB"
+  },
+  prf: [bafy1, bafy2]
+}
+
+
+
+
+
+
+
+``` js
+{
+  iss: "did:example:bob",
+  aud: "did:example:alice", // Origoinally removed these because it"s duplicated from prf, but important for e.g. CRDT
+  run: {
+    sub: "did:example:alice", // <- where, IFF the subject is relevant... only really useful for 
+    cmd: "counter/inc",
+    arg: {by: 4}
+  },
+  meta: {},
+  cause: {"/": "bafy...123"},
+  prf: [bafy1, bafy3],
+  exp: 999999 // Doubles as a handy timeout
+}
+```
+
+``` js
+{
+  iss: "did:example:bob",
+  aud: "did:example:alice", // NOTE: can be ANYONE in the delegation chain for proxying if you don't have a direct path?
+  exp: 999999,
+  run: {
+    act: "wasm/run",
+    arg: {
+      mod: "ipfs://...",
+      fun: "add_one",
+      arg: [42]
+    }
+  },
+  prf: [bafy1, bafy3]
+}
+```
+
+
+NOTE TO SELF: keep aud field as optional. i.e. make it salient for ergonomic reasons / push it into the task writer's face. also aud & sub MAY diverge in the future.
+
+
+
+
+
+NOTE: can make great use of batrch signatures
+NOTE TO SELF: batch signatures need trees, too?
+
+``` mermaid
+sequenceDiagram
+    actor User
+
+    participant Service
+
+    participant WorkQueue
+    participant Worker1
+    participant Worker2
+
+    autonumber
+
+    Note over Service, Worker2: Service Setup
+        WorkQueue -->> Service: delegate(WorkQueue, queue/push)
+        Service   -->> WorkQueue: delegate(Service, ucan/proxy/sign)
+
+        WorkQueue -->> Worker1: delegate(WorkQueue, queue/pop)
+        WorkQueue -->> Worker1: delegate(Service, ucan/proxy/sign)
+
+        WorkQueue -->> Worker2: delegate(WorkQueue, queue/pop)
+        WorkQueue -->> Worker2: delegate(Service, ucan/proxy/sign)
+
+    Note over User, Service: Delegates to User
+        Service -->> User: delegate(Service, crud/update)
+
+    Note over User, Worker2: Invocation with Proxy Execution
+        User ->> Service: invoke(Service, [crud/update, "foo", 42], prf: [➐])
+        Service -) WorkQueue: invoke(WorkQueue, queue/push, [➑], prf: [➊])
+
+        Note over WorkQueue, Worker2: Work Stealing
+        Worker2 ->>+ WorkQueue: invoke(WorkQueue, queue/pop, prf: [➎])
+        WorkQueue ->>- Worker2: receipt(inv: ➓, out: ➒)
+        Worker2 ->> Worker2: Execute!(➒)
+        Worker2 -) User: receipt(out: ok, inv: ➒, prf: [➏,➋])
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--
+FOR PROMISE SPEC
+sequenceDiagram
+    participant Alice 💾
+    participant Bob
+    participant Carol 📧
+    participant Dan
+
+    autonumber
+
+    Note over Alice 💾, Dan: Delegations
+        Alice 💾 -->> Bob:      Delegate<Read from Alice's DB>
+        Bob      -->> Carol 📧: Delegate<Read from Alice's DB>
+        Carol 📧 -->> Dan:      Delegate<Read from Alice's DB>
+        Carol 📧 -->> Dan:      Delegate<Send email as Carol>
+
+    Note over Alice 💾, Dan: Single Invocation
+        Dan      ->>  Alice 💾: Read from Alice's DB!
+        Alice 💾 -->> Dan:      Result<➎>
+
+    Note over Alice 💾, Dan: Multiple Invocation Flow
+        Dan      ->>  Alice 💾: Read from Alice's DB!
+        Alice 💾 -->> Dan:      Result<➐>
+        Dan      ->>  Carol 📧: Send email containing Result<➐> as Carol!
+        Carol 📧 ->>  Carol 📧: Send email!
+
+    Note over Alice 💾, Dan: Promise Pipeline
+        Dan      ->>  Alice 💾: Read from Alice's DB!
+        Dan      ->>  Carol 📧: Send email containing Result<⓫> as Carol!
+        Alice 💾 -->> Carol 📧: Result<⓫>
+        Carol 📧 ->>  Carol 📧: Send email containing Result<⓫> as Carol!
+-->
+
+  
+```mermaid
+sequenceDiagram
+    actor Alice
+    actor Bob
+    actor Carol
+
+    autonumber
+
+    Note over Alice, Carol: Delegated
+    Alice ->> Bob: Invoke!
+    Bob ->> Carol: Subinvoke(1)
+    Carol -->> Bob: Receipt
+    Bob -->> Alice: RecReceipt(3)
+
+    Note over Alice, Carol: Job Queue
+    Bob -->> Carol: Delegate<ExecuteInMyName>
+    Alice ->> Bob: Invoke!
+    Carol -->> Bob: Gimme
+    Bob ->> Carol: Fwd(6)
+    Carol ->> Alice: Receipt
+  ```
