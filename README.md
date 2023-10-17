@@ -148,7 +148,7 @@ const promised = {
     "to": "alice@example.com",
     "message": {"await/ok": {"/": "bafkr4ie7m464donhksutmfqsyqzgcrqhzi2vc5ygiw3ajkhuz6lulnbjam"}}
   }          //        ▲
-}            //  ┌──✔️ ─┘
+}            //  ┌──✔️─┘
              // ┌┴─┐
 const result = {"ok": "hello"}
                    // └──┬──┘
@@ -177,7 +177,7 @@ const promised = {
     "to": "alice@example.com",
     "message": {"await/ok": {"/": "bafkr4ie7m464donhksutmfqsyqzgcrqhzi2vc5ygiw3ajkhuz6lulnbjam"}}
   }                 // ▲
-}                   // └──✖️ ───┐
+}                   // └──✖️───┐
                     //      ┌──┴──┐
 returnedReceipt.result === {"error": "Divided by zero"}
 
