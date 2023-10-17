@@ -181,8 +181,6 @@ const promised = {
                     //      ┌──┴──┐
 returnedReceipt.result === {"error": "Divided by zero"}
 
-const receipt = await promised.resolve(result, "bafkr4ie7m464donhksutmfqsyqzgcrqhzi2vc5ygiw3ajkhuz6lulnbjam").execute()
-
 newReceipt === {
   "out": {
     "error": {
