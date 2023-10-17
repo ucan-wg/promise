@@ -14,7 +14,6 @@
 ## Depends On
 
 - [IPLD]
-- [DID]
 - [UCAN Invocation]
 
 ## Language
@@ -43,7 +42,7 @@ Indexing the output of a function by its inputs is called "input addressing". By
 
 An Action Identifier ("ActID") is the content address of an [Action]. It can be found direction in an Invocation:
 
-``` json
+``` js
 // Pseudocode
 const actId = invocation.inv.run.act.asCid()
 ```
@@ -107,7 +106,7 @@ Here are a few examples:
 
 # 3. Resolution
 
-When a Reciept that contains the relevant `Action` CID
+When a Reciept that contains the relevant ActID, it SHOULD broadcast that it has a
 
 Branch mismatch
 
@@ -117,15 +116,11 @@ The [Capability Transport Protocol (CapTP)] is one of the most influential objec
 
 The Object Capability Network ([OCapN]) protocol extends [CapTP] with a generalized networking layer. It has implementations from the [Spritely Institute] and [Agoric]. At time of writing, it is in the process of being standardized.
 
-[Electronic Rights Transfer Protocol (ERTP)] builds on top of [CapTP] concepts for blockchain & digital asset use cases.
-
 [Cap "n Proto RPC] is an influential RPC framework based on concepts from [CapTP].
 
 # 5. Acknowledgements
 
 Many thanks to [Mark Miller] for his [trail blazing work][erights] on [capability systems].
-
-Many thanks to [Luke Marsen] and [Simon Worthington] for their feedback on invocation model from their work on [Bacalhau] and [IPVM].
 
 Thanks to [Philipp Krüger] for the enthusiastic feedback on the overall design and encoding.
 
@@ -139,100 +134,26 @@ Thanks to [Christine Lemmer-Webber] for the many conversations about capability 
 
 <!-- External Links -->
 
+[Action]: https://github.com/ucan-wg/invocation#31-action
+[Brooklyn Zelenka]: https://github.com/expede/
+[Cap 'n Proto RPC]: https://capnproto.org/
+[CapTP]: http://erights.org/elib/distrib/captp/index.html
+[Christine Lemmer-Webber]: https://github.com/cwebber
+[DAG House]: https://dag.house
+[Fission]: https://fission.codes/
+[IPLD]: https://ipld.io/
+[Irakli Gozalishvili]: https://github.com/Gozala
+[Mark Miller]: https://github.com/erights
+[OCapN]: https://github.com/ocapn/
+[Philipp Krüger]: https://github.com/matheus23/
+[Robust Composition]: http://www.erights.org/talks/thesis/markm-thesis.pdf
+[UCAN Invocation]: https://github.com/ucan-wg/invocation
+[Zeeshan Lakhani]: https://github.com/zeeshanlakhani
+[distributed promise pipelines]: http://erights.org/elib/distrib/pipeline.html
+[eRights]: https://erights.org
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-```json
-{
-  iss: "did:example:bob",
-  aud: "did:example:alice",
-  act: "msg/send",
-  nnc: "",
-  arg: {
-    from: "mailto:alice@example.com",
-    to: [
-      "bob@example.com",
-      "carol@example.com"
-    ],
-    subject: "hello",
-    body: "world"
-  }
-  meta: {
-    fuel: 100,
-    disk: "100GB"
-  },
-  prf: [bafy1, bafy2]
-}
-
-
-
-
-
-
-
-``` js
-{
-  iss: "did:example:bob",
-  aud: "did:example:alice", // Origoinally removed these because it"s duplicated from prf, but important for e.g. CRDT
-  run: {
-    sub: "did:example:alice", // <- where, IFF the subject is relevant... only really useful for 
-    cmd: "counter/inc",
-    arg: {by: 4}
-  },
-  meta: {},
-  cause: {"/": "bafy...123"},
-  prf: [bafy1, bafy3],
-  exp: 999999 // Doubles as a handy timeout
-}
-```
-
-``` js
-{
-  iss: "did:example:bob",
-  aud: "did:example:alice", // NOTE: can be ANYONE in the delegation chain for proxying if you don't have a direct path?
-  exp: 999999,
-  run: {
-    act: "wasm/run",
-    arg: {
-      mod: "ipfs://...",
-      fun: "add_one",
-      arg: [42]
-    }
-  },
-  prf: [bafy1, bafy3]
-}
-```
-
-
-NOTE TO SELF: keep aud field as optional. i.e. make it salient for ergonomic reasons / push it into the task writer's face. also aud & sub MAY diverge in the future.
-
-
-
-
-
-NOTE: can make great use of batrch signatures
-NOTE TO SELF: batch signatures need trees, too?
 
 ``` mermaid
 sequenceDiagram
