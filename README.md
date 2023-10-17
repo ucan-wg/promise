@@ -30,7 +30,9 @@ This specification describes a mechanism for extending UCAN [Invocation]s with d
 >
 > —[Mark Miller], [Robust Composition]
 
-A promise is a deferred value that waits on the completion of some function. In effect it says "when that function completes, take the output and substitute it here". Distributed promises do the same, but unlike the familiar `async/await` of languages like JavaScript, MAY reference any already running computation, even from other programs. This of course requires a global namespace. Luckily, [UCAN Invocation] already has [globally-unique identifiers for every Action][ActID].
+A promise is a deferred value that waits on the completion of some function. In effect it says "when that function completes, take the output and substitute it here". Distributed promises do the same, but unlike the familiar `async/await` of languages like JavaScript, MAY reference any already running computation, even from other programs. In effect, this allows a significant reduction in latency, and reduces the requirement that all nodes be online to respond to results and dispatch new invocations.
+
+This of course requires a global namespace. Luckily, [UCAN Invocation] already has [globally-unique identifiers for every Action][ActID].
 
 ## 1.1 Input Addressing
 
@@ -52,6 +54,42 @@ If an Action is run multiple times, an ActID MAY refer to many Receipts. Actions
 ### 1.1.2 Memoization Table
 
 Input addressing plays nicely as a global [memoization] table. Since it maps a hash of the inputs to the outputs, someone with access to the cache can pull out values by their input address, and skip re-running potentially expensive computations.
+
+## 1.2 Comparing Async Promises to Sync Invocations
+
+The semantics of invocations say the same with round trips and promises. Here is an exmaple of delegation, invocation, and promise pipelining to show how these relate:
+
+``` mermaid
+sequenceDiagram
+    participant Alice 💾
+    participant Bob
+    participant Carol 📧
+    participant Dan
+
+    autonumber
+
+    Note over Alice 💾, Dan: Delegations
+        Alice 💾 -->> Bob:      Delegate<Read from Alice's DB>
+        Bob      -->> Carol 📧: Delegate<Read from Alice's DB>
+        Carol 📧 -->> Dan:      Delegate<Read from Alice's DB>
+        Carol 📧 -->> Dan:      Delegate<Send email as Carol>
+
+    Note over Alice 💾, Dan: Single Invocation
+        Dan      ->>  Alice 💾: Read from Alice's DB!
+        Alice 💾 -->> Dan:      Result<➎>
+
+    Note over Alice 💾, Dan: Multiple Invocation Flow
+        Dan      ->>  Alice 💾: Read from Alice's DB!
+        Alice 💾 -->> Dan:      Result<➐>
+        Dan      ->>  Carol 📧: Send email containing Result<➐> as Carol!
+        Carol 📧 ->>  Carol 📧: Send email!
+
+    Note over Alice 💾, Dan: Promise Pipeline
+        Dan      ->>  Alice 💾: Read from Alice's DB!
+        Dan      ->>  Carol 📧: Send email containing Result<⓫> as Carol!
+        Alice 💾 -->> Carol 📧: Result<⓫>
+        Carol 📧 ->>  Carol 📧: Send email containing Result<⓫> as Carol!
+```
 
 # 2. Promise Format
 
@@ -271,112 +309,3 @@ Thanks to [Christine Lemmer-Webber] for the many conversations about capability 
 [eRights]: https://erights.org
 [gossip]: https://en.wikipedia.org/wiki/Gossip_protocol
 [pubsub]: https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern
-
-
-
-``` mermaid
-sequenceDiagram
-    actor User
-
-    participant Service
-
-    participant WorkQueue
-    participant Worker1
-    participant Worker2
-
-    autonumber
-
-    Note over Service, Worker2: Service Setup
-        WorkQueue -->> Service: delegate(WorkQueue, queue/push)
-        Service   -->> WorkQueue: delegate(Service, ucan/proxy/sign)
-
-        WorkQueue -->> Worker1: delegate(WorkQueue, queue/pop)
-        WorkQueue -->> Worker1: delegate(Service, ucan/proxy/sign)
-
-        WorkQueue -->> Worker2: delegate(WorkQueue, queue/pop)
-        WorkQueue -->> Worker2: delegate(Service, ucan/proxy/sign)
-
-    Note over User, Service: Delegates to User
-        Service -->> User: delegate(Service, crud/update)
-
-    Note over User, Worker2: Invocation with Proxy Execution
-        User ->> Service: invoke(Service, [crud/update, "foo", 42], prf: [➐])
-        Service -) WorkQueue: invoke(WorkQueue, queue/push, [➑], prf: [➊])
-
-        Note over WorkQueue, Worker2: Work Stealing
-        Worker2 ->>+ WorkQueue: invoke(WorkQueue, queue/pop, prf: [➎])
-        WorkQueue ->>- Worker2: receipt(inv: ➓, out: ➒)
-        Worker2 ->> Worker2: Execute!(➒)
-        Worker2 -) User: receipt(out: ok, inv: ➒, prf: [➏,➋])
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!--
-FOR PROMISE SPEC
-sequenceDiagram
-    participant Alice 💾
-    participant Bob
-    participant Carol 📧
-    participant Dan
-
-    autonumber
-
-    Note over Alice 💾, Dan: Delegations
-        Alice 💾 -->> Bob:      Delegate<Read from Alice's DB>
-        Bob      -->> Carol 📧: Delegate<Read from Alice's DB>
-        Carol 📧 -->> Dan:      Delegate<Read from Alice's DB>
-        Carol 📧 -->> Dan:      Delegate<Send email as Carol>
-
-    Note over Alice 💾, Dan: Single Invocation
-        Dan      ->>  Alice 💾: Read from Alice's DB!
-        Alice 💾 -->> Dan:      Result<➎>
-
-    Note over Alice 💾, Dan: Multiple Invocation Flow
-        Dan      ->>  Alice 💾: Read from Alice's DB!
-        Alice 💾 -->> Dan:      Result<➐>
-        Dan      ->>  Carol 📧: Send email containing Result<➐> as Carol!
-        Carol 📧 ->>  Carol 📧: Send email!
-
-    Note over Alice 💾, Dan: Promise Pipeline
-        Dan      ->>  Alice 💾: Read from Alice's DB!
-        Dan      ->>  Carol 📧: Send email containing Result<⓫> as Carol!
-        Alice 💾 -->> Carol 📧: Result<⓫>
-        Carol 📧 ->>  Carol 📧: Send email containing Result<⓫> as Carol!
--->
-
-  
-```mermaid
-sequenceDiagram
-    actor Alice
-    actor Bob
-    actor Carol
-
-    autonumber
-
-    Note over Alice, Carol: Delegated
-    Alice ->> Bob: Invoke!
-    Bob ->> Carol: Subinvoke(1)
-    Carol -->> Bob: Receipt
-    Bob -->> Alice: RecReceipt(3)
-
-    Note over Alice, Carol: Job Queue
-    Bob -->> Carol: Delegate<ExecuteInMyName>
-    Alice ->> Bob: Invoke!
-    Carol -->> Bob: Gimme
-    Bob ->> Carol: Fwd(6)
-    Carol ->> Alice: Receipt
-  ```
