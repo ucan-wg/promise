@@ -26,19 +26,17 @@ This specification describes a mechanism for extending UCAN [Invocation]s with d
 
 # 1. Introduction
 
-A promise is a deferred value that waits on the completion of some function. In effect it says "when that function completes, take the output and substitute it here". Distributed promises do the same, but unlike the familiar `async/await` of languages like JavaScript, MAY reference any already running computation, even from other programs. This of course requires a global namespace. Luckily, [UCAN Invocation] already has globally-unique identifiers for every [Action].
-
-## 1.1 Motivation
-
 > Machines grow faster and memories grow larger. But the speed of light is constant and New York is not getting any closer to Tokyo. As hardware continues to improve, the latency barrier between distant machines will increasingly dominate the performance of distributed computation. When distributed computational steps require unnessesary round trips, compositions of these steps can cause unnessecary cascading sequences of round trips.
 >
 > Mark Miller, Robust Composition
 
-## 1.2 Input Addressing
+A promise is a deferred value that waits on the completion of some function. In effect it says "when that function completes, take the output and substitute it here". Distributed promises do the same, but unlike the familiar `async/await` of languages like JavaScript, MAY reference any already running computation, even from other programs. This of course requires a global namespace. Luckily, [UCAN Invocation] already has [globally-unique identifiers for every Action][ActID].
+
+## 1.1 Input Addressing
 
 Indexing the output of a function by its inputs is called "input addressing". By comparison, "content addressing" acts on static data[^input-content-addressing].
 
-### 1.2.1 ActID
+### 1.1.1 ActID
 
 An Action Identifier ("ActID") is the content address of an [Action]. It can be found direction in an Invocation:
 
@@ -51,7 +49,7 @@ A Recept MAY have multiple input addresses. For instance, if an Action contains 
 
 If an Action is run multiple times, an ActID MAY refer to many Receipts. Actions SHOULD be fully qualified, and include a unique nonce if the Action is non-idempotent. This ensures that any (correctly run) Receipts for the same ActID will have the same output value.
 
-### 1.2.2 Memoization Table
+### 1.1.2 Memoization Table
 
 Input addressing plays nicely as a global [memoization] table. Since it maps a hash of the inputs to the outputs, someone with access to the cache can pull out values by their input address, and skip re-running potentially expensive computations.
 
@@ -105,7 +103,7 @@ Here are a few examples:
 
 # 3. Resolution
 
-Using a shared cache (sometimes called a [blackboard]), many cooperating processes can collaborate on multiple separate goals while reusing each others results. The exact mechanism is left to the implementation, but [pubsub], [gossip], and [DHT]s are all viable.
+Using a shared cache[^bbd], many cooperating processes can collaborate on multiple separate goals while reusing each others results. The exact mechanism is left to the implementation, but [pubsub], [gossip], and [DHT]s are all viable.
 
 The Executor MUST extract the [Result] from a resolved [Receipt], and attempt to match on the tag. If the match passes or fails branch selection, the behaviour is as described below.
 
@@ -242,6 +240,7 @@ Thanks to [Christine Lemmer-Webber] for the many conversations about capability 
 
 <!-- Footnotes -->
 
+[^bbd]: Sometimes called a [blackboard]
 [^input-content-addressing]: Content addressing can be seen as a special case of input addressing for the identity function.
  
 <!-- Internal Links -->
