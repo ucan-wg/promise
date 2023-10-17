@@ -22,7 +22,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 # 0. Abstract
 
-This specification describes a mechanism for extending UCAN [Invocation]s with distributed [promise pipeline]s.
+This specification describes a mechanism for extending [UCAN Invocation]s with [distributed promise pipeline]s.
 
 # 1. Introduction
 
