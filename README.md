@@ -68,23 +68,19 @@ sequenceDiagram
 
     autonumber
 
-    Note over Alice 💾, Dan: Delegations
+    Note over Alice 💾, Dan: Delegation Setup
         Alice 💾 -->> Bob:      Delegate<Read from Alice's DB>
         Bob      -->> Carol 📧: Delegate<Read from Alice's DB>
         Carol 📧 -->> Dan:      Delegate<Read from Alice's DB>
         Carol 📧 -->> Dan:      Delegate<Send email as Carol>
 
-    Note over Alice 💾, Dan: Single Invocation
-        Dan      ->>  Alice 💾: Read from Alice's DB!
-        Alice 💾 -->> Dan:      Result<➎>
-
-    Note over Alice 💾, Dan: Multiple Invocation Flow
+    Note over Alice 💾, Dan: Synchronous Invocation Flow
         Dan      ->>  Alice 💾: Read from Alice's DB!
         Alice 💾 -->> Dan:      Result<➐>
         Dan      ->>  Carol 📧: Send email containing Result<➐> as Carol!
         Carol 📧 ->>  Carol 📧: Send email!
 
-    Note over Alice 💾, Dan: Promise Pipeline
+    Note over Alice 💾, Dan: Async Promise Pipeline Flow
         Dan      ->>  Alice 💾: Read from Alice's DB!
         Dan      ->>  Carol 📧: Send email containing Result<⓫> as Carol!
         Alice 💾 -->> Carol 📧: Result<⓫>
