@@ -84,17 +84,16 @@ Here are a few examples:
     "run": cid({
       "act": cid({
         "nnc": "246910121416"
-          "cmd": "msg/send",
-          "arg": {
-            "from": "alice@example.com",
-            "to": [
-              "bob@example.com",
-              "carol@example.com",
-              {"await/ok": {"/": "bafkr4ie7m464donhksutmfqsyqzgcrqhzi2vc5ygiw3ajkhuz6lulnbjam"}}
-          //   └───┬────┘        └────────────────────────────┬──────────────────────────────┘
-          // Branch Selector                                ActID
-            ]
-          }
+        "cmd": "msg/send",
+        "arg": {
+          "from": "alice@example.com",
+          "to": [
+            "bob@example.com",
+            "carol@example.com",
+            {"await/ok": {"/": "bafkr4ie7m464donhksutmfqsyqzgcrqhzi2vc5ygiw3ajkhuz6lulnbjam"}}
+        //   └───┬────┘        └────────────────────────────┬──────────────────────────────┘
+        // Branch Selector                                ActID
+          ]
         }
       }),
       "mta": {},
@@ -106,9 +105,124 @@ Here are a few examples:
 
 # 3. Resolution
 
-When a Reciept that contains the relevant ActID, it SHOULD broadcast that it has a
+Using a shared cache (sometimes called a [blackboard]), many cooperating processes can collaborate on multiple separate goals while reusing each others results. The exact mechanism is left to the implementation, but [pubsub], [gossip], and [DHT]s are all viable.
 
-Branch mismatch
+The Executor MUST extract the [Result] from a resolved [Receipt], and attempt to match on the tag. If the match passes or fails branch selection, the behaviour is as described below.
+
+## 3.1 Happy Path
+
+If the Promise uses the `await/*` tag, then any branch MUST be accepted, and the entire Result (inluding the `ok` or `error` tag) MUST be substituted. For example:
+
+``` js
+// Pseudocode
+
+const promised = {
+  "nnc": "0123456789AB"
+  "cmd": "msg/send",
+  "arg": {
+    "to": "alice@example.com",
+    "message": {"await/*": {"/": "bafkr4ie7m464donhksutmfqsyqzgcrqhzi2vc5ygiw3ajkhuz6lulnbjam"}}
+  }
+}
+
+const result = {"ok": "hello"}
+
+promised.resolve(result, "bafkr4ie7m464donhksutmfqsyqzgcrqhzi2vc5ygiw3ajkhuz6lulnbjam") === {
+  "nnc": "0123456789AB"
+  "cmd": "msg/send",
+  "arg": {
+    "to": "alice@example.com",
+    "message": {"ok": "hello"} // Substituted
+  }
+}
+```
+
+If the Promise uses an `await/ok` or `await/error` tag, then it MUST only match on Results that match the relevant tag. The inner value MUST be extracted from the outer `ok` or `error` map and substituted. Extending our earlier example:
+
+``` js
+// Pseudocode
+
+const promised = {
+  "nnc": "0123456789AB"
+  "cmd": "msg/send",
+  "arg": {
+    "to": "alice@example.com",
+    "message": {"await/ok": {"/": "bafkr4ie7m464donhksutmfqsyqzgcrqhzi2vc5ygiw3ajkhuz6lulnbjam"}}
+  }
+}
+
+const result = {"ok": "hello"}
+
+promised.resolve(result, "bafkr4ie7m464donhksutmfqsyqzgcrqhzi2vc5ygiw3ajkhuz6lulnbjam") === {
+  "nnc": "0123456789AB"
+  "cmd": "msg/send",
+  "arg": {
+    "to": "alice@example.com",
+    "message": 123 // Substituted
+  }
+}
+```
+
+## 3.2 Branch Mismatch
+
+If the branch from the Result doesn't match the branch selector, the Invocation that contains the Promise MUST return an `error` Result in its own Reciept.
+
+``` js
+// Pseudocode
+
+const promised = {
+  "nnc": "0123456789AB"
+  "cmd": "msg/send",
+  "arg": {
+    "to": "alice@example.com",
+    "message": {"await/ok": {"/": "bafkr4ie7m464donhksutmfqsyqzgcrqhzi2vc5ygiw3ajkhuz6lulnbjam"}}
+  }
+}
+
+returnedReceipt.result === {"error": "Divided by zero"}
+
+const receipt = await promised.resolve(result, "bafkr4ie7m464donhksutmfqsyqzgcrqhzi2vc5ygiw3ajkhuz6lulnbjam").execute()
+
+newReceipt === {
+  "out": {
+    "error": {
+      "reason": "branch mismatch",
+      "expected": "ok",
+      "got": "error",
+      "from": receipt.cid
+    }
+  },
+  // ...
+}
+```
+
+Note that this can also happen when matching on the `error` branch:
+
+``` js
+// Pseudocode
+
+const promised = {
+  "nnc": "0123456789AB"
+  "cmd": "log/push",
+  "arg": {
+    "msg": {"await/error": {"/": "bafkr4ie7m464donhksutmfqsyqzgcrqhzi2vc5ygiw3ajkhuz6lulnbjam"}}
+  }
+}
+
+// ...
+
+newReceipt === {
+  "out": {
+    "error": {
+      "reason": "branch mismatch",
+      "expected": "error",
+      "got": "ok",
+      "from": receipt.cid
+    }
+  },
+  // ...
+}
+```
 
 # 4. Prior Art
 
@@ -135,11 +249,13 @@ Thanks to [Christine Lemmer-Webber] for the many conversations about capability 
 <!-- External Links -->
 
 [Action]: https://github.com/ucan-wg/invocation#31-action
+[BCP 14]: https://www.rfc-editor.org/info/bcp14
 [Brooklyn Zelenka]: https://github.com/expede/
 [Cap 'n Proto RPC]: https://capnproto.org/
 [CapTP]: http://erights.org/elib/distrib/captp/index.html
 [Christine Lemmer-Webber]: https://github.com/cwebber
 [DAG House]: https://dag.house
+[DHT]: https://en.wikipedia.org/wiki/Distributed_hash_table
 [Fission]: https://fission.codes/
 [IPLD]: https://ipld.io/
 [Irakli Gozalishvili]: https://github.com/Gozala
@@ -149,9 +265,11 @@ Thanks to [Christine Lemmer-Webber] for the many conversations about capability 
 [Robust Composition]: http://www.erights.org/talks/thesis/markm-thesis.pdf
 [UCAN Invocation]: https://github.com/ucan-wg/invocation
 [Zeeshan Lakhani]: https://github.com/zeeshanlakhani
+[blackboard]: https://en.wikipedia.org/wiki/Blackboard_(design_pattern)
 [distributed promise pipelines]: http://erights.org/elib/distrib/pipeline.html
 [eRights]: https://erights.org
-
+[gossip]: https://en.wikipedia.org/wiki/Gossip_protocol
+[pubsub]: https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern
 
 
 
