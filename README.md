@@ -76,20 +76,20 @@ sequenceDiagram
 
     Note over Alice 💾, Dan: Synchronous Invocation Flow
         Dan      ->>  Alice 💾: Read from Alice's DB!
-        Alice 💾 -->> Dan:      Result<➐>
-        Dan      ->>  Carol 📧: Send email containing Result<➐> as Carol!
-        Carol 📧 ->>  Carol 📧: Send email containing Result<➐> as Carol!
+        Alice 💾 -->> Dan:      Result<➎> = "hello"
+        Dan      ->>  Carol 📧: Send email containing "hello" as Carol!
+        Carol 📧 ->>  Carol 📧: Send email containing "hello" as Carol!
 
     Note over Alice 💾, Dan: Async Promise Pipeline Flow
         Dan      ->>  Alice 💾: Read from Alice's DB!
 
-        par Dan to Carol
-            Dan      ->>  Carol 📧: Send email containing Result<⓫> as Carol!
-        and Alice to Carol
-            Alice 💾 -->> Carol 📧: Result<⓫>
+        par Promise
+            Dan      ->>  Carol 📧: Send email containing Result<➒> as Carol!
+        and Result
+            Alice 💾 -->> Carol 📧: Result<➒> = "hello"
         end
 
-        Carol 📧 ->>  Carol 📧: Send email containing Result<⓫> as Carol!
+        Carol 📧 ->>  Carol 📧: Send email containing "hello" as Carol!
 ```
 
 # 2. Promise Format
