@@ -187,7 +187,7 @@ newReceipt === {
       "reason": "branch mismatch",
       "expected": "ok",
       "got": "error",
-      "from": receipt.cid
+      "from": returnedReceipt.cid
     }
   },
   // ...
@@ -215,7 +215,7 @@ newReceipt === {
       "reason": "branch mismatch",
       "expected": "error",
       "got": "ok",
-      "from": receipt.cid
+      "from": returnedReceipt.cid
     }
   },
   // ...
