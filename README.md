@@ -123,9 +123,9 @@ const promised = {
   }
 }
 
-const result = {"ok": "hello"}
-            // └──────┬──────┘
-            //        └──────────────────────────────────────────────────────────────────────────┐
+returnedReceipt.receipt = {"ok": "hello"}
+                       // └──────┬──────┘
+                       //        └───────────────────────────────────────────────────────────────┐
 promised.resolve(result, "bafkr4ie7m464donhksutmfqsyqzgcrqhzi2vc5ygiw3ajkhuz6lulnbjam") === { // │
   "nnc": "0123456789AB"                                                                       // │
   "cmd": "msg/send",                                                                          // │
@@ -209,7 +209,7 @@ const promised = {
   }
 }
 
-// ...
+returnedReceipt.receipt = {"ok": "hello"}
 
 newReceipt === {
   "out": {
