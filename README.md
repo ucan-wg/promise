@@ -26,7 +26,7 @@ This specification describes a mechanism for extending UCAN [Invocation]s with d
 
 # 1. Introduction
 
-> Machines grow faster and memories grow larger. But the speed of light is constant and New York is not getting any closer to Tokyo. As hardware continues to improve, the latency barrier between distant machines will increasingly dominate the performance of distributed computation. When distributed computational steps require unnessesary round trips, compositions of these steps can cause unnessecary cascading sequences of round trips.
+> Machines grow faster and memories grow larger. But the speed of light is constant and New York is not getting any closer to Tokyo. As hardware continues to improve, the latency barrier between distant machines will increasingly dominate the performance of distributed computation. When distributed computational steps require unnessesary round trips, compositions of these steps can cause unnessesary cascading sequences of round trips.
 >
 > —[Mark Miller], [Robust Composition]
 
@@ -57,7 +57,7 @@ Input addressing plays nicely as a global [memoization] table. Since it maps a h
 
 ## 1.2 Comparing Async Promises to Sync Invocations
 
-The semantics of invocations say the same with round trips and promises. Here is an exmaple of delegation, invocation, and promise pipelining to show how these relate:
+The semantics of invocations say the same with round trips and promises. Here is an example of delegation, invocation, and promise pipelining to show how these relate:
 
 ``` mermaid
 sequenceDiagram
@@ -94,7 +94,7 @@ sequenceDiagram
 
 # 2. Promise Format
 
-A Promise is encoded as a map with a single field (the tag) which selects for the branch, and the CID of the relevant [Task]. Becasue Tasks uniquely identify their output and MAY be replicated across multiple trustless providers, referencing the entire [Invocation] would overspecify the [Result].
+A Promise is encoded as a map with a single field (the tag) which selects for the branch, and the CID of the relevant [Task]. Because Tasks uniquely identify their output and MAY be replicated across multiple trustless providers, referencing the entire [Invocation] would over-specify the [Result].
 
 It has several variants:
 
@@ -144,11 +144,11 @@ Here are a few examples:
 
 Using a shared cache[^bbd], many cooperating processes can collaborate on multiple separate goals while reusing each others results. The exact mechanism is left to the implementation, but [pubsub], [gossip], and [DHT]s are all viable.
 
-The Executor MUST extract the [Result] from a resolved [Receipt], and attempt to match on the tag. If the match passes or fails branch selection, the behaviour is as described below.
+The Executor MUST extract the [Result] from a resolved [Receipt], and attempt to match on the tag. If the match passes or fails branch selection, the behavior is as described below.
 
 ## 3.1 Happy Path
 
-If the Promise uses the `await/*` tag, then any branch MUST be accepted, and the entire Result (inluding the `ok` or `error` tag) MUST be substituted. For example:
+If the Promise uses the `await/*` tag, then any branch MUST be accepted, and the entire Result (including the `ok` or `error` tag) MUST be substituted. For example:
 
 ``` js
 // Pseudocode
@@ -204,7 +204,7 @@ promised.resolve(result, "bafkr4ie7m464donhksutmfqsyqzgcrqhzi2vc5ygiw3ajkhuz6lul
 
 ## 3.2 Branch Mismatch
 
-If the branch from the Result doesn't match the branch selector, the Invocation that contains the Promise MUST return an `error` Result in its own Reciept.
+If the branch from the Result doesn't match the branch selector, the Invocation that contains the Promise MUST return an `error` Result in its own Receipt.
 
 ``` js
 // Pseudocode

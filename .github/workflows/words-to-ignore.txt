@@ -13,6 +13,7 @@ Cap'n
 CapTP
 DAG-CBOR
 DAG-JSON
+DHT
 E-lang
 ERTP
 Enum
@@ -86,6 +87,7 @@ pipelined
 pipelining
 pre-vacation
 proxied
+pubsub
 rc
 referentially
 representable
