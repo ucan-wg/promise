@@ -1,7 +1,9 @@
 Acknowledgements
+ActID
 Agoric
 Akiko
 Akiko's
+Async
 BCP
 Bacalhau
 CBOR
@@ -11,6 +13,7 @@ Cap'n
 CapTP
 DAG-CBOR
 DAG-JSON
+DHT
 E-lang
 ERTP
 Enum
@@ -58,6 +61,7 @@ atomicity
 auth
 backend
 base64url
+bbd
 canonicalized
 cryptographic
 cryptographically
@@ -75,6 +79,7 @@ invoker
 js-num
 memoization
 multiformat
+namespace
 outmost
 parallelize
 parameterizing
@@ -82,6 +87,7 @@ pipelined
 pipelining
 pre-vacation
 proxied
+pubsub
 rc
 referentially
 representable

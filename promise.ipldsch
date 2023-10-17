@@ -1,0 +1,5 @@
+type Promise union {
+  | &Task "await/*"
+  | &Task "await/ok"
+  | &Task "await/error"
+} representation keyed
