@@ -28,7 +28,7 @@ This specification describes a mechanism for extending UCAN [Invocation]s with d
 
 > Machines grow faster and memories grow larger. But the speed of light is constant and New York is not getting any closer to Tokyo. As hardware continues to improve, the latency barrier between distant machines will increasingly dominate the performance of distributed computation. When distributed computational steps require unnessesary round trips, compositions of these steps can cause unnessecary cascading sequences of round trips.
 >
-> Mark Miller, Robust Composition
+> —[Mark Miller], [Robust Composition]
 
 A promise is a deferred value that waits on the completion of some function. In effect it says "when that function completes, take the output and substitute it here". Distributed promises do the same, but unlike the familiar `async/await` of languages like JavaScript, MAY reference any already running computation, even from other programs. This of course requires a global namespace. Luckily, [UCAN Invocation] already has [globally-unique identifiers for every Action][ActID].
 
@@ -38,7 +38,7 @@ Indexing the output of a function by its inputs is called "input addressing". By
 
 ### 1.1.1 ActID
 
-An Action Identifier ("ActID") is the content address of an [Action]. It can be found direction in an Invocation:
+An Action Identifier (ActID) is the content address of an [Action]. It can be found direction in an Invocation:
 
 ``` js
 // Pseudocode
@@ -224,11 +224,11 @@ newReceipt === {
 
 # 4. Prior Art
 
-The [Capability Transport Protocol (CapTP)] is one of the most influential object-capability systems, and forms the basis for much of the rest of the items on this list.
+The Capability Transport Protocol ([CapTP]) is one of the most influential object-capability systems, and forms the basis for much of the rest of the items on this list.
 
 The Object Capability Network ([OCapN]) protocol extends [CapTP] with a generalized networking layer. It has implementations from the [Spritely Institute] and [Agoric]. At time of writing, it is in the process of being standardized.
 
-[Cap "n Proto RPC] is an influential RPC framework based on concepts from [CapTP].
+[Cap 'n Proto RPC] is an influential RPC framework based on concepts from [CapTP]. Their website include much text expounding the benefits of promise pipelining.
 
 # 5. Acknowledgements
 
@@ -248,6 +248,7 @@ Thanks to [Christine Lemmer-Webber] for the many conversations about capability 
 <!-- External Links -->
 
 [Action]: https://github.com/ucan-wg/invocation#31-action
+[Agoric]: https://agoric.com/
 [BCP 14]: https://www.rfc-editor.org/info/bcp14
 [Brooklyn Zelenka]: https://github.com/expede/
 [Cap 'n Proto RPC]: https://capnproto.org/
@@ -262,6 +263,7 @@ Thanks to [Christine Lemmer-Webber] for the many conversations about capability 
 [OCapN]: https://github.com/ocapn/
 [Philipp Krüger]: https://github.com/matheus23/
 [Robust Composition]: http://www.erights.org/talks/thesis/markm-thesis.pdf
+[Spritely Institute]: https://spritely.institute/
 [UCAN Invocation]: https://github.com/ucan-wg/invocation
 [Zeeshan Lakhani]: https://github.com/zeeshanlakhani
 [blackboard]: https://en.wikipedia.org/wiki/Blackboard_(design_pattern)
